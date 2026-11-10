@@ -175,3 +175,11 @@ test('landing page is static, data-driven, and never uses innerHTML', () => {
   assert.match(html, /href="\/calendar\.ics"/); // works without JavaScript
   assert.ok(!/innerHTML|outerHTML|insertAdjacentHTML|document\.write/.test(html));
 });
+
+test('landing page logo is served from public/ (not hotlinked)', () => {
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  assert.match(html, /<img src="\/logo\.png"[^>]*alt="Immanuel Lutheran Church"/);
+  assert.ok(!/cdn\.churchtrac\.com/.test(html));
+  const png = readFileSync(new URL('../public/logo.png', import.meta.url));
+  assert.equal(png.subarray(1, 4).toString(), 'PNG');
+});

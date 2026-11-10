@@ -26,9 +26,8 @@
   /* Header bar */
   .navbar { background: var(--accent); padding: 8px 16px; }
   .navbar .inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 1240px; margin: 0 auto; min-height: 62px; }
-  .wordmark { color: #fff; text-decoration: none; line-height: 1; }
-  .wordmark .big { display: block; font-size: 22px; font-weight: 500; letter-spacing: .14em; }
-  .wordmark .small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: .24em; margin-top: 4px; opacity: .95; }
+  .logo { display: block; line-height: 0; }
+  .logo img { display: block; height: 62px; width: auto; }
   .nav-btn { color: #fff; text-decoration: none; font-size: 14px; border: 1px solid #fff; border-radius: 12px; padding: 4px 16px; white-space: nowrap; }
   .nav-btn:hover { background: rgba(255,255,255,.15); }
 
@@ -76,7 +75,7 @@
   footer p { margin: 4px auto; max-width: 46em; }
 
   @media (max-width: 560px) {
-    .wordmark .big { font-size: 18px; }
+    .logo img { height: 48px; }
     .heading { font-size: 26px; }
     .cats li { flex-wrap: wrap; }
   }
@@ -86,9 +85,8 @@
 
 <header class="navbar">
   <div class="inner">
-    <a class="wordmark" id="church-site" href="https://ilcwaukee.churchtrac.com/">
-      <span class="big">IMMANUEL</span>
-      <span class="small">LUTHERAN CHURCH</span>
+    <a class="logo" href="https://ilcwaukee.churchtrac.com/">
+      <img src="/logo.png" width="237" height="62" alt="Immanuel Lutheran Church">
     </a>
     <a class="nav-btn" href="https://ilcwaukee.churchtrac.com/">Church website</a>
   </div>
