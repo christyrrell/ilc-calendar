@@ -1,0 +1,21 @@
+name: Feed health check
+
+# Runs daily and fails if the live feed stops serving real events
+# (for example, if ChurchTrac starts rejecting our requests).
+# GitHub emails the repository owner when a scheduled run fails.
+on:
+  schedule:
+    - cron: '17 13 * * *'   # 13:17 UTC, about 7-8 AM Central
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check live feed
+        run: scripts/healthcheck.sh https://ilc-calendar.vercel.app

@@ -78,6 +78,7 @@
     .logo img { height: 48px; }
     .heading { font-size: 26px; }
     .cats li { flex-wrap: wrap; }
+    .cats .name { flex: 0 0 100%; }
   }
 </style>
 </head>
@@ -100,6 +101,7 @@
       <p class="intro">Subscribe once and worship services, classes, and gatherings at <span id="cal-name">Immanuel Lutheran Church</span> appear in the calendar app you already use — and stay up to date as plans change.</p>
       <div class="actions">
         <a class="btn btn-solid btn-lg" id="subscribe" href="/calendar.ics">Subscribe to all events</a>
+        <a class="btn btn-outline btn-lg" id="google" href="#" target="_blank" rel="noopener" hidden>Add to Google Calendar</a>
         <button class="btn btn-outline btn-lg" type="button" data-copy="">Copy calendar link</button>
       </div>
     </div>
@@ -119,11 +121,11 @@
           </ol>
         </div>
         <div class="tile">
-          <div class="eyebrow">On a computer</div>
+          <div class="eyebrow">Android · Web</div>
           <h3>Google Calendar</h3>
           <ol>
-            <li>Next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b>.</li>
-            <li>Paste this link:</li>
+            <li>Tap <b>Add to Google Calendar</b> above and confirm with <b>Add</b>.</li>
+            <li>If that doesn't work: on a computer, next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b> and paste this link:</li>
           </ol>
           <div class="url"><code class="feed-url">/calendar.ics</code><button class="btn btn-outline btn-sm" type="button" data-copy="">Copy</button></div>
         </div>
@@ -165,6 +167,8 @@
     const base = `${location.host}/calendar.ics`;
     const webcal = (q = '') => `webcal://${base}${q}`;
     const https = (q = '') => `${location.protocol}//${base}${q}`;
+    // Google Calendar's (undocumented) subscribe link; works in a browser on Android and desktop.
+    const google = (q = '') => `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal(q))}`;
 
     const wireCopy = (btn, text) => {
       btn.dataset.copy = text;
@@ -177,6 +181,9 @@
     };
 
     document.getElementById('subscribe').href = webcal();
+    const g = document.getElementById('google');
+    g.href = google();
+    g.hidden = false;
     for (const el of document.querySelectorAll('.feed-url')) el.textContent = https();
     for (const btn of document.querySelectorAll('[data-copy]')) wireCopy(btn, https());
 
@@ -215,7 +222,14 @@
         copy.textContent = 'Copy link';
         wireCopy(copy, https(q));
 
-        li.append(name, sub, copy);
+        const goog = document.createElement('a');
+        goog.className = 'btn btn-outline btn-sm';
+        goog.href = google(q);
+        goog.target = '_blank';
+        goog.rel = 'noopener';
+        goog.textContent = 'Google';
+
+        li.append(name, sub, goog, copy);
         list.append(li);
       }
       if (list.children.length) document.getElementById('categories').hidden = false;

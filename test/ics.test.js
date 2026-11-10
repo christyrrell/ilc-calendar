@@ -183,3 +183,28 @@ test('landing page logo is served from public/ (not hotlinked)', () => {
   const png = readFileSync(new URL('../public/logo.png', import.meta.url));
   assert.equal(png.subarray(1, 4).toString(), 'PNG');
 });
+
+test('category filter matching nothing returns 404, never an empty calendar', async () => {
+  const r = await calendarResponse('/calendar.ics?cal=no-such-category', { fetchImpl: okFetch, now: NOW });
+  assert.equal(r.status, 404);
+  assert.equal(r.headers['Cache-Control'], 'no-store');
+  assert.ok(!r.body.includes('BEGIN:VCALENDAR'));
+});
+
+test('category filter with one valid and one unknown slug still serves the valid one', async () => {
+  const r = await calendarResponse('/calendar.ics?cal=holidays,worship-services,typo', { fetchImpl: okFetch, now: NOW });
+  assert.equal(r.status, 200);
+  assert.equal(vevents(r.body).length, 2);
+});
+
+test('healthy feed asks the CDN to keep the last good copy for 7 days on errors', async () => {
+  const r = await calendarResponse('/calendar.ics', { fetchImpl: okFetch, now: NOW });
+  assert.match(r.headers['Cache-Control'], /s-maxage=3600/);
+  assert.match(r.headers['Cache-Control'], /stale-if-error=604800/);
+});
+
+test('landing page offers a Google Calendar subscribe link', () => {
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  assert.match(html, /calendar\.google\.com\/calendar\/render\?cid=\$\{encodeURIComponent\(webcal\(q\)\)\}/);
+  assert.match(html, /id="google"[^>]*hidden/); // hidden until the script fills in the address
+});

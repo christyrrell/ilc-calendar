@@ -29,7 +29,24 @@ Upstream quirks it handles (observed 2026-11-10):
 
 If ChurchTrac fails, times out, returns non-JSON, or returns **zero** events, the feed
 answers **503** (not an empty 200). Calendar apps keep their existing copy and retry.
-A warm process also keeps the last good copy for up to 7 days and serves it if upstream fails.
+A `?cal=` filter that matches no events (a typo, or a category the church renamed or removed)
+answers **404** for the same reason.
+
+Last-good-copy fallback:
+
+- **On Vercel:** responses carry `stale-if-error=604800`, so when the function returns an error the
+  CDN keeps serving the last good copy for up to 7 days. (The CDN cache is cleared by each new
+  deployment and rarely requested URLs can be evicted, so this is best-effort.)
+- **Self-hosted:** the long-running `server.js` process keeps the last good copy in memory for up to
+  7 days. On Vercel that in-memory copy only lasts as long as a function instance does.
+
+## Monitoring
+
+`.github/workflows/healthcheck.yml` runs `scripts/healthcheck.sh` every day (and on demand from the
+Actions tab). It fails, and GitHub emails the repository owner, if the live feed isn't a valid
+calendar with at least 10 events, unique UIDs, and an event today or later. Run it by hand with
+`scripts/healthcheck.sh [base-url]`. GitHub pauses scheduled workflows after 60 days without
+repository activity; re-enable it from the Actions tab if that happens.
 
 All events are `TRANSP:TRANSPARENT` so subscribing doesn't make you look busy.
 
@@ -39,7 +56,7 @@ All events are `TRANSP:TRANSPARENT` so subscribing doesn't make you look busy.
 |---|---|
 | `/` | Static landing page (`public/index.html`) with subscribe buttons; fills in per-category links from `/calendars.json` |
 | `/calendar.ics` | All events |
-| `/calendar.ics?cal=worship-services,holidays` | Only selected categories (slugs listed on `/`) |
+| `/calendar.ics?cal=worship-services,holidays` | Only selected categories (slugs listed on `/`); 404 if nothing matches |
 | `/calendars.json` | Calendar name, source link, and categories (`slug`, `name`, `count`) |
 | `/healthz` | Liveness (self-hosted server only) |
 
@@ -64,7 +81,7 @@ npm start         # http://localhost:8787
 
 **Vercel:** `public/` is served from the CDN as static files (and, because it exists, it is the
 only directory Vercel serves statically, so source files aren't published). `api/calendar.js` and
-`api/calendars.js` are Node functions; `vercel.json` rewrites `/calendar.ics` and `/calendars.json` to them. Responses carry `s-maxage=3600, stale-while-revalidate=86400`, so
+`api/calendars.js` are Node functions; `vercel.json` rewrites `/calendar.ics` and `/calendars.json` to them. Responses carry `s-maxage=3600, stale-while-revalidate=86400, stale-if-error=604800`, so
 ChurchTrac is hit at most about once an hour no matter how many people subscribe.
 
 **Self-hosted (Mac Mini):** `node server.js` (serves `public/index.html` and the same endpoints) under launchd, exposed with a Cloudflare Tunnel
@@ -73,6 +90,8 @@ ingress rule pointing a hostname at `http://localhost:8787`.
 ## Subscribing
 
 - **iPhone / Mac:** open `webcal://<host>/calendar.ics` (the button on `/`).
-- **Google Calendar:** on the web, Other calendars **+** → From URL → `https://<host>/calendar.ics`.
+- **Google Calendar:** the page's **Add to Google Calendar** button
+  (`https://calendar.google.com/calendar/render?cid=webcal://<host>/calendar.ics`, an undocumented
+  Google link that also works in a browser on Android), or on the web, Other calendars **+** → From URL → `https://<host>/calendar.ics`.
   Google refreshes subscriptions on its own schedule (often 12–24 h).
 - **Outlook:** Add calendar → Subscribe from web.
