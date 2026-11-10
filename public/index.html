@@ -6,35 +6,159 @@
 <meta name="robots" content="noindex">
 <title>Immanuel Lutheran Church — Calendar Subscription</title>
 <style>
-  body { font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; color: #222; }
-  h1 { font-size: 1.5rem; }
-  .btn { display: inline-block; background: #2f5d8a; color: #fff; padding: .6rem 1rem; border-radius: 6px; text-decoration: none; }
-  code { background: #f3f3f3; padding: .1rem .3rem; border-radius: 4px; font-size: .85em; word-break: break-all; }
-  li { margin: .4rem 0; }
-  small { color: #666; }
+  /* Visual style follows the church website (ilcwaukee.churchtrac.com). */
+  :root {
+    --accent: #93a445;        /* church green: header, headings, buttons */
+    --accent-dark: #7d8c39;
+    --accent-tint: #f3f6e9;
+    --ink: #262831;
+    --text: #3c4351;
+    --muted: #5f6672;
+    --page: #eef4fc;
+    --line: rgba(16, 24, 40, .16);
+    --tile-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--text); background: var(--page); }
+  a { color: var(--accent-dark); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 15px; }
+
+  /* Header bar */
+  .navbar { background: var(--accent); padding: 8px 16px; }
+  .navbar .inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 1240px; margin: 0 auto; min-height: 62px; }
+  .wordmark { color: #fff; text-decoration: none; line-height: 1; }
+  .wordmark .big { display: block; font-size: 22px; font-weight: 500; letter-spacing: .14em; }
+  .wordmark .small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: .24em; margin-top: 4px; opacity: .95; }
+  .nav-btn { color: #fff; text-decoration: none; font-size: 14px; border: 1px solid #fff; border-radius: 12px; padding: 4px 16px; white-space: nowrap; }
+  .nav-btn:hover { background: rgba(255,255,255,.15); }
+
+  main { background: #fff; }
+  .block { padding: 48px 0; text-align: center; }
+  .block + .block { border-top: 1px solid rgba(16,24,40,.06); }
+
+  /* Headings and eyebrows */
+  .heading { color: var(--accent); font-size: 32px; line-height: 1.2; font-weight: 500; margin: 0 0 4px; }
+  .heading.lg { font-size: clamp(30px, 4.4vw, 40px); }
+  .intro { color: var(--ink); margin: 0 auto 28px; max-width: 36em; }
+  .eyebrow { color: var(--accent); font-size: 13.6px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+
+  /* Buttons */
+  .btn { display: inline-block; border: 1px solid var(--accent); border-radius: 12px; font: inherit; font-size: 14px; line-height: 21px; cursor: pointer; text-decoration: none; }
+  .btn-solid { background: var(--accent); color: #fff; }
+  .btn-solid:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn-outline { background: #fff; color: var(--accent-dark); }
+  .btn-outline:hover { background: var(--accent-tint); }
+  .btn-lg { padding: 10px 40px; }
+  .btn-md { padding: 6px 24px; }
+  .btn-sm { padding: 4px 14px; font-size: 13px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+  /* Tiles */
+  .tiles { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); text-align: left; }
+  .tile { background: #fff; border-radius: 12px; padding: 28px; box-shadow: var(--tile-shadow); color: var(--ink); }
+  .tile h3 { font-size: 20px; font-weight: 500; margin: 0 0 10px; color: var(--ink); }
+  .tile ol { margin: 0; padding-left: 20px; }
+  .tile li { margin: 4px 0; }
+
+  .url { display: flex; align-items: center; gap: 8px; margin-top: 14px; background: var(--page); border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 6px 12px; }
+  .url code { flex: 1; min-width: 0; font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); overflow-wrap: anywhere; }
+
+  /* Category list */
+  .cats { list-style: none; margin: 0 auto; padding: 0; max-width: 720px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,.075); text-align: left; overflow: hidden; }
+  .cats li { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--line); }
+  .cats li:first-child { border-top: 0; }
+  .cats .name { flex: 1; min-width: 0; color: var(--ink); font-weight: 500; }
+  .cats .count { display: block; color: var(--muted); font-weight: 400; font-size: 13.6px; }
+  .hint { color: var(--muted); font-size: 14px; margin-top: 16px; }
+  .hint code { background: var(--page); border-radius: 6px; padding: 2px 6px; color: var(--ink); }
+
+  footer { padding: 28px 0 36px; text-align: center; color: var(--muted); font-size: 13.6px; }
+  footer p { margin: 4px auto; max-width: 46em; }
+
+  @media (max-width: 560px) {
+    .wordmark .big { font-size: 18px; }
+    .heading { font-size: 26px; }
+    .cats li { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
-<h1><span id="cal-name">Immanuel Lutheran Church</span> calendar</h1>
-<p>Subscribe once and church events stay up to date in your own calendar app.</p>
-<p><a class="btn" id="subscribe" href="/calendar.ics">Subscribe to all events</a></p>
-<p>
-  <strong>iPhone / Mac:</strong> tap the button above.<br>
-  <strong>Google Calendar:</strong> on a computer, open Google Calendar → Other calendars <b>+</b> → From URL, and paste:<br>
-  <code class="feed-url">/calendar.ics</code><br>
-  <strong>Outlook:</strong> Add calendar → Subscribe from web, and paste the same address.
-</p>
 
-<section id="categories" hidden>
-  <h2>Just one category</h2>
-  <ul id="category-list"></ul>
-  <p><small>Combine categories with commas, e.g. <code>?cal=worship-services,holidays</code></small></p>
-</section>
+<header class="navbar">
+  <div class="inner">
+    <a class="wordmark" id="church-site" href="https://ilcwaukee.churchtrac.com/">
+      <span class="big">IMMANUEL</span>
+      <span class="small">LUTHERAN CHURCH</span>
+    </a>
+    <a class="nav-btn" href="https://ilcwaukee.churchtrac.com/">Church website</a>
+  </div>
+</header>
 
-<p><small>
-  Google refreshes subscribed calendars on its own schedule (often every 12–24 hours); Apple and Outlook check more often.
-  Events come from the church's <a id="source" href="https://www.churchtrac.com/">public ChurchTrac calendar</a>.
-</small></p>
+<main>
+  <section class="block">
+    <div class="wrap">
+      <div class="eyebrow">Church calendar</div>
+      <h1 class="heading lg">Add our events to your calendar</h1>
+      <p class="intro">Subscribe once and worship services, classes, and gatherings at <span id="cal-name">Immanuel Lutheran Church</span> appear in the calendar app you already use — and stay up to date as plans change.</p>
+      <div class="actions">
+        <a class="btn btn-solid btn-lg" id="subscribe" href="/calendar.ics">Subscribe to all events</a>
+        <button class="btn btn-outline btn-lg" type="button" data-copy="">Copy calendar link</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <h2 class="heading">How to Subscribe</h2>
+      <p class="intro">Pick your calendar app. You only need to do this once.</p>
+      <div class="tiles">
+        <div class="tile">
+          <div class="eyebrow">iPhone · iPad · Mac</div>
+          <h3>Apple Calendar</h3>
+          <ol>
+            <li>Tap <b>Subscribe to all events</b> above.</li>
+            <li>Confirm with <b>Subscribe</b>.</li>
+          </ol>
+        </div>
+        <div class="tile">
+          <div class="eyebrow">On a computer</div>
+          <h3>Google Calendar</h3>
+          <ol>
+            <li>Next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b>.</li>
+            <li>Paste this link:</li>
+          </ol>
+          <div class="url"><code class="feed-url">/calendar.ics</code><button class="btn btn-outline btn-sm" type="button" data-copy="">Copy</button></div>
+        </div>
+        <div class="tile">
+          <div class="eyebrow">Web or desktop</div>
+          <h3>Outlook</h3>
+          <ol>
+            <li>Choose <b>Add calendar</b> → <b>Subscribe from web</b>.</li>
+            <li>Paste this link:</li>
+          </ol>
+          <div class="url"><code class="feed-url">/calendar.ics</code><button class="btn btn-outline btn-sm" type="button" data-copy="">Copy</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="categories" hidden>
+    <div class="wrap">
+      <h2 class="heading">Only Want Some Events?</h2>
+      <p class="intro">Subscribe to a single category instead of everything.</p>
+      <ul class="cats" id="category-list"></ul>
+      <p class="hint">Combine categories with commas, e.g. <code>?cal=worship-services,holidays</code></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Events come from the church's <a id="source" href="https://www.churchtrac.com/">public ChurchTrac calendar</a> and update automatically.</p>
+    <p>Google refreshes subscribed calendars on its own schedule (often every 12–24 hours); Apple and Outlook check more often.</p>
+    <p>An unofficial subscription service for <span id="footer-name">Immanuel Lutheran Church</span> members.</p>
+  </div>
+</footer>
 
 <script>
   // Fill in absolute feed URLs from this page's own address, then list categories.
@@ -44,8 +168,19 @@
     const webcal = (q = '') => `webcal://${base}${q}`;
     const https = (q = '') => `${location.protocol}//${base}${q}`;
 
+    const wireCopy = (btn, text) => {
+      btn.dataset.copy = text;
+      btn.addEventListener('click', async () => {
+        const label = btn.textContent;
+        try { await navigator.clipboard.writeText(btn.dataset.copy); btn.textContent = 'Copied!'; }
+        catch { btn.textContent = 'Press ⌘C / Ctrl+C'; }
+        setTimeout(() => { btn.textContent = label; }, 1600);
+      });
+    };
+
     document.getElementById('subscribe').href = webcal();
     for (const el of document.querySelectorAll('.feed-url')) el.textContent = https();
+    for (const btn of document.querySelectorAll('[data-copy]')) wireCopy(btn, https());
 
     try {
       const res = await fetch('/calendars.json');
@@ -53,6 +188,7 @@
       const data = await res.json();
       if (data.name) {
         document.getElementById('cal-name').textContent = data.name;
+        document.getElementById('footer-name').textContent = data.name;
         document.title = `${data.name} — Calendar Subscription`;
       }
       if (data.source) document.getElementById('source').href = data.source;
@@ -61,12 +197,27 @@
       for (const cal of data.calendars || []) {
         const q = `?cal=${encodeURIComponent(cal.slug)}`;
         const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = webcal(q);
-        a.textContent = cal.name;
-        const code = document.createElement('code');
-        code.textContent = https(q);
-        li.append(a, ' ', code);
+
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = cal.name;
+        const count = document.createElement('span');
+        count.className = 'count';
+        count.textContent = `${cal.count} ${cal.count === 1 ? 'event' : 'events'}`;
+        name.append(count);
+
+        const sub = document.createElement('a');
+        sub.className = 'btn btn-solid btn-sm';
+        sub.href = webcal(q);
+        sub.textContent = 'Subscribe';
+
+        const copy = document.createElement('button');
+        copy.className = 'btn btn-outline btn-sm';
+        copy.type = 'button';
+        copy.textContent = 'Copy link';
+        wireCopy(copy, https(q));
+
+        li.append(name, sub, copy);
         list.append(li);
       }
       if (list.children.length) document.getElementById('categories').hidden = false;
