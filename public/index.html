@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Immanuel Lutheran Church — Calendar Subscription</title>
+<style>
+  body { font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.5rem; }
+  .btn { display: inline-block; background: #2f5d8a; color: #fff; padding: .6rem 1rem; border-radius: 6px; text-decoration: none; }
+  code { background: #f3f3f3; padding: .1rem .3rem; border-radius: 4px; font-size: .85em; word-break: break-all; }
+  li { margin: .4rem 0; }
+  small { color: #666; }
+</style>
+</head>
+<body>
+<h1><span id="cal-name">Immanuel Lutheran Church</span> calendar</h1>
+<p>Subscribe once and church events stay up to date in your own calendar app.</p>
+<p><a class="btn" id="subscribe" href="/calendar.ics">Subscribe to all events</a></p>
+<p>
+  <strong>iPhone / Mac:</strong> tap the button above.<br>
+  <strong>Google Calendar:</strong> on a computer, open Google Calendar → Other calendars <b>+</b> → From URL, and paste:<br>
+  <code class="feed-url">/calendar.ics</code><br>
+  <strong>Outlook:</strong> Add calendar → Subscribe from web, and paste the same address.
+</p>
+
+<section id="categories" hidden>
+  <h2>Just one category</h2>
+  <ul id="category-list"></ul>
+  <p><small>Combine categories with commas, e.g. <code>?cal=worship-services,holidays</code></small></p>
+</section>
+
+<p><small>
+  Google refreshes subscribed calendars on its own schedule (often every 12–24 hours); Apple and Outlook check more often.
+  Events come from the church's <a id="source" href="https://www.churchtrac.com/">public ChurchTrac calendar</a>.
+</small></p>
+
+<script>
+  // Fill in absolute feed URLs from this page's own address, then list categories.
+  // Values are inserted only via textContent and attributes, so nothing is parsed as HTML.
+  (async () => {
+    const base = `${location.host}/calendar.ics`;
+    const webcal = (q = '') => `webcal://${base}${q}`;
+    const https = (q = '') => `${location.protocol}//${base}${q}`;
+
+    document.getElementById('subscribe').href = webcal();
+    for (const el of document.querySelectorAll('.feed-url')) el.textContent = https();
+
+    try {
+      const res = await fetch('/calendars.json');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.name) {
+        document.getElementById('cal-name').textContent = data.name;
+        document.title = `${data.name} — Calendar Subscription`;
+      }
+      if (data.source) document.getElementById('source').href = data.source;
+
+      const list = document.getElementById('category-list');
+      for (const cal of data.calendars || []) {
+        const q = `?cal=${encodeURIComponent(cal.slug)}`;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = webcal(q);
+        a.textContent = cal.name;
+        const code = document.createElement('code');
+        code.textContent = https(q);
+        li.append(a, ' ', code);
+        list.append(li);
+      }
+      if (list.children.length) document.getElementById('categories').hidden = false;
+    } catch { /* page still works without the category list */ }
+  })();
+</script>
+</body>
+</html>

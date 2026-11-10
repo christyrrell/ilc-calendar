@@ -37,9 +37,10 @@ All events are `TRANSP:TRANSPARENT` so subscribing doesn't make you look busy.
 
 | Path | Purpose |
 |---|---|
-| `/` | Landing page with subscribe buttons and per-category links |
+| `/` | Static landing page (`public/index.html`) with subscribe buttons; fills in per-category links from `/calendars.json` |
 | `/calendar.ics` | All events |
 | `/calendar.ics?cal=worship-services,holidays` | Only selected categories (slugs listed on `/`) |
+| `/calendars.json` | Calendar name, source link, and categories (`slug`, `name`, `count`) |
 | `/healthz` | Liveness (self-hosted server only) |
 
 ## Configuration (env vars, all optional)
@@ -61,11 +62,12 @@ npm start         # http://localhost:8787
 
 ## Deploy
 
-**Vercel:** `api/calendar.js` and `api/home.js` are Node functions; `vercel.json` rewrites
-`/calendar.ics` and `/`. Responses carry `s-maxage=3600, stale-while-revalidate=86400`, so
+**Vercel:** `public/` is served from the CDN as static files (and, because it exists, it is the
+only directory Vercel serves statically, so source files aren't published). `api/calendar.js` and
+`api/calendars.js` are Node functions; `vercel.json` rewrites `/calendar.ics` and `/calendars.json` to them. Responses carry `s-maxage=3600, stale-while-revalidate=86400`, so
 ChurchTrac is hit at most about once an hour no matter how many people subscribe.
 
-**Self-hosted (Mac Mini):** `node server.js` under launchd, exposed with a Cloudflare Tunnel
+**Self-hosted (Mac Mini):** `node server.js` (serves `public/index.html` and the same endpoints) under launchd, exposed with a Cloudflare Tunnel
 ingress rule pointing a hostname at `http://localhost:8787`.
 
 ## Subscribing

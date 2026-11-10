@@ -5,7 +5,7 @@ import {
   buildIcs, zonedToUtc, decodeHtml, slugify, foldLine, escapeText,
   filterEvents, listCalendars, getEvents, _resetCache, config,
 } from '../lib/ics.js';
-import { calendarResponse } from '../lib/handlers.js';
+import { calendarResponse, calendarsResponse } from '../lib/handlers.js';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/events.json', import.meta.url)));
 const NOW = new Date('2026-11-10T17:00:00Z');
@@ -147,4 +147,31 @@ test('?cal= filter with healthy upstream returns 200 with only that category', a
   assert.equal(r.status, 200);
   assert.equal(vevents(r.body).length, 2);
   assert.match(r.body, /X-WR-CALNAME:Immanuel Lutheran Church: Worship Services/);
+});
+
+// ---- /calendars.json and the static landing page ----
+
+test('calendars.json lists categories with slugs, name, and source', async () => {
+  const r = await calendarsResponse({ fetchImpl: okFetch, now: NOW });
+  assert.equal(r.status, 200);
+  assert.match(r.headers['Content-Type'], /application\/json/);
+  const data = JSON.parse(r.body);
+  assert.equal(data.name, 'Immanuel Lutheran Church');
+  assert.equal(data.source, 'https://www.churchtrac.com/public_calendar?ui=F05D55DF');
+  const worship = data.calendars.find((c) => c.slug === 'worship-services');
+  assert.deepEqual(worship, { slug: 'worship-services', name: 'Worship Services', count: 2 });
+  assert.ok(data.calendars.some((c) => c.name === 'Education Classes & Events')); // entities decoded
+});
+
+test('calendars.json returns 503 JSON when upstream is down', async () => {
+  const r = await calendarsResponse({ fetchImpl: badFetch, now: NOW });
+  assert.equal(r.status, 503);
+  assert.deepEqual(JSON.parse(r.body), { error: 'source unavailable' });
+});
+
+test('landing page is static, data-driven, and never uses innerHTML', () => {
+  const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+  assert.match(html, /fetch\('\/calendars\.json'\)/);
+  assert.match(html, /href="\/calendar\.ics"/); // works without JavaScript
+  assert.ok(!/innerHTML|outerHTML|insertAdjacentHTML|document\.write/.test(html));
 });

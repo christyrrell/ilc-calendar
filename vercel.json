@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     { "source": "/calendar.ics", "destination": "/api/calendar" },
-    { "source": "/", "destination": "/api/home" }
+    { "source": "/calendars.json", "destination": "/api/calendars" }
   ]
 }
